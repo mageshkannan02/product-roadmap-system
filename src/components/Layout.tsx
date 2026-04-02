@@ -5,6 +5,7 @@ import { cn, formatUserName } from '../lib/utils';
 import { NotificationBell } from './NotificationBell';
 import { RoleRequestModal } from './RoleRequestModal';
 import { CustomDropdown, DropdownOption } from './CustomDropdown';
+import { LuminaChat } from './AI/LuminaChat';
 import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 
@@ -202,6 +203,7 @@ export function Layout() {
         onClose={() => setIsRoleModalOpen(false)}
         requestedRole={requestedRole}
       />
+      <LuminaChat />
     </div>
   );
 }
