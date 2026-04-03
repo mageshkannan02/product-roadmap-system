@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Feature, User, ActivityLog } from '../models/index.ts';
+import { Feature, User, ActivityLog, Roadmap } from '../models/index.ts';
 import { createNotification } from './notification.controller';
 
 const logActivity = async (entity_type: 'Feature' | 'Task', entity_id: number, user_id: number, action: 'created' | 'status_change' | 'deleted', old_status?: string | null, new_status?: string | null, description?: string | null) => {
@@ -54,6 +54,27 @@ export const updateFeature = async (req: any, res: any): Promise<void> => {
 
     if (newStatus && oldStatus !== newStatus) {
       await logActivity('Feature', feature.id, req.user.id, 'status_change', oldStatus, newStatus, req.body.description);
+      
+      // Notify project owner
+      try {
+        const featureWithRoadmap = await Feature.findByPk(feature.id, {
+          include: [{ model: Roadmap, as: 'Roadmap', attributes: ['id', 'title', 'created_by'] }]
+        }) as any;
+        
+        const projectOwnerId = featureWithRoadmap?.Roadmap?.created_by;
+        if (projectOwnerId && projectOwnerId !== req.user.id) {
+          await createNotification(
+            projectOwnerId,
+            'status_change',
+            'Feature Status Updated',
+            `Feature "${feature.title}" in project "${featureWithRoadmap.Roadmap.title}" is now "${newStatus}".`,
+            featureWithRoadmap.Roadmap.id,
+            null
+          );
+        }
+      } catch (err) {
+        console.error('Failed to notify project owner of feature update:', err);
+      }
     }
 
     if (req.body.assignees && Array.isArray(req.body.assignees)) {

@@ -4,7 +4,7 @@ import { User } from '../models/index.ts';
 // Helper to create a notification
 export const createNotification = async (
   user_id: number,
-  type: 'task_assigned' | 'message' | 'role_request',
+  type: 'task_assigned' | 'message' | 'role_request' | 'status_change',
   title: string,
   body: string,
   roadmap_id?: number | null,

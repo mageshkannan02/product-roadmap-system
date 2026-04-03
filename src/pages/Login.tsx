@@ -3,6 +3,14 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
 import { toast } from 'react-hot-toast';
+import { CustomDropdown, DropdownOption } from '../components/CustomDropdown';
+import { Users, Briefcase, Shield } from 'lucide-react';
+
+const roleOptions: DropdownOption[] = [
+  { value: 'Team Member', label: 'Team Member', icon: <Users className="w-4 h-4" /> },
+  { value: 'Product Manager', label: 'Product Manager', icon: <Briefcase className="w-4 h-4" /> },
+  { value: 'Admin', label: 'Admin', icon: <Shield className="w-4 h-4" /> },
+];
 
 export function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -58,18 +66,12 @@ export function Login() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Role</label>
-                  <div className="mt-1">
-                    <select
-                      value={role}
-                      onChange={(e) => setRole(e.target.value)}
-                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white"
-                    >
-                      <option value="Team Member">Team Member</option>
-                      <option value="Product Manager">Product Manager</option>
-                      <option value="Admin">Admin</option>
-                    </select>
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                  <CustomDropdown
+                    value={role}
+                    onChange={setRole}
+                    options={roleOptions}
+                  />
                 </div>
               </>
             )}

@@ -68,6 +68,30 @@ export const updateTask = async (req: any, res: any): Promise<void> => {
 
     if (newStatus && oldStatus !== newStatus) {
       await logActivity('Task', task.id, req.user.id, 'status_change', oldStatus, newStatus, req.body.description);
+      
+      // Notify project owner
+      try {
+        const taskWithRoadmap = await Task.findByPk(task.id, {
+          include: [{ 
+            model: Feature, 
+            include: [{ model: Roadmap, as: 'Roadmap', attributes: ['id', 'title', 'created_by'] }] 
+          }]
+        }) as any;
+        
+        const projectOwnerId = taskWithRoadmap?.Feature?.Roadmap?.created_by;
+        if (projectOwnerId && projectOwnerId !== req.user.id) {
+          await createNotification(
+            projectOwnerId,
+            'status_change',
+            'Task Status Updated',
+            `Task "${task.title}" in project "${taskWithRoadmap.Feature.Roadmap.title}" is now "${newStatus}".`,
+            taskWithRoadmap.Feature.Roadmap.id,
+            task.id
+          );
+        }
+      } catch (err) {
+        console.error('Failed to notify project owner of task update:', err);
+      }
     }
 
     // Auto-complete feature if all sibling tasks are Done

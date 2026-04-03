@@ -9,12 +9,14 @@
     "dev": "tsx watch server.ts"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.20.0",
+    "openai": "^6.33.0",
     "sequelize": "^6.37.8",
     "sqlite3": "^5.1.7"
   },

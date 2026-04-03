@@ -151,6 +151,7 @@ export function CustomDropdown({
               )}
             >
               <div className="flex items-center gap-2">
+                {option.icon && <div className="shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">{option.icon}</div>}
                 <span className={cn("font-medium transition-colors", 
                   isSelected(option.value) ? "text-indigo-700" : option.colorClass || "text-gray-700 group-hover:text-gray-900"
                 )}>
@@ -179,7 +180,13 @@ export function CustomDropdown({
         )}
       >
         <div className="flex items-center gap-2 truncate pr-2">
-          {prefixIcon && <div className="shrink-0">{prefixIcon}</div>}
+          {prefixIcon ? (
+            <div className="shrink-0">{prefixIcon}</div>
+          ) : (
+            !isMulti && options.find(o => o.value === value)?.icon && (
+              <div className="shrink-0 opacity-70">{options.find(o => o.value === value)?.icon}</div>
+            )
+          )}
           <span className={cn(
             !isMulti && options.find(o => o.value === value)?.colorClass,
             ((isMulti && selectedValues.length === 0) || (!isMulti && !value)) && "text-gray-400"
