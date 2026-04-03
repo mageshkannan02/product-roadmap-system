@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, CheckCheck, Zap, MessageSquare, Users, Trash2 } from 'lucide-react';
+import { Bell, CheckCheck, Zap, MessageSquare, Users, Trash2, Activity, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 interface Notif {
   id: number;
-  type: 'task_assigned' | 'message';
+  type: 'task_assigned' | 'message' | 'role_request' | 'status_change';
   title: string;
   body: string;
   read: boolean;
@@ -20,6 +20,15 @@ interface Notif {
 const ICONS: Record<string, React.ReactNode> = {
   task_assigned: <Zap className="w-4 h-4" />,
   message: <MessageSquare className="w-4 h-4" />,
+  role_request: <Users className="w-4 h-4" />,
+  status_change: <Activity className="w-4 h-4" />,
+};
+
+const COLORS: Record<string, string> = {
+  task_assigned: 'bg-violet-100 text-violet-600',
+  message: 'bg-emerald-100 text-emerald-600',
+  role_request: 'bg-blue-100 text-blue-600',
+  status_change: 'bg-amber-100 text-amber-600',
 };
 
 export function NotificationBell() {
@@ -40,10 +49,18 @@ export function NotificationBell() {
         for (const n of data) {
           if (!knownIds.current.has(n.id) && !n.read) {
             toast(n.body, {
-              icon: n.type === 'task_assigned' ? '⚡' : n.title.includes('Project') ? '🏗️' : '💬',
+              icon: n.type === 'task_assigned' ? '⚡' : 
+                    n.type === 'role_request' ? '👥' :
+                    n.type === 'status_change' ? '📈' :
+                    n.title.includes('Project') ? '🏗️' : '💬',
               duration: 5000,
               style: {
-                borderLeft: `4px solid ${n.type === 'task_assigned' ? '#6366f1' : '#10b981'}`,
+                borderLeft: `4px solid ${
+                  n.type === 'task_assigned' ? '#6366f1' : 
+                  n.type === 'role_request' ? '#3b82f6' :
+                  n.type === 'status_change' ? '#f59e0b' :
+                  '#10b981'
+                }`,
                 fontWeight: '500',
                 fontSize: '13px',
               },
@@ -179,12 +196,8 @@ export function NotificationBell() {
                     className={`group flex items-start gap-3 px-4 py-3.5 cursor-pointer transition-colors hover:bg-gray-50 ${!n.read ? 'bg-indigo-50/50' : ''}`}
                   >
                     {/* Icon */}
-                    <div className={`mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                      n.type === 'task_assigned'
-                        ? 'bg-violet-100 text-violet-600'
-                        : 'bg-emerald-100 text-emerald-600'
-                    }`}>
-                      {n.type === 'task_assigned' ? <Zap className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
+                    <div className={`mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${COLORS[n.type] || 'bg-gray-100 text-gray-600'}`}>
+                      {ICONS[n.type] || <Bell className="w-4 h-4" />}
                     </div>
 
                     {/* Content */}

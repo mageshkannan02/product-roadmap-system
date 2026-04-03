@@ -4,7 +4,7 @@ import { sequelize } from '../config/db';
 export class Notification extends Model {
   declare id: number;
   declare user_id: number;
-  declare type: 'task_assigned' | 'message' | 'role_request';
+  declare type: 'task_assigned' | 'message' | 'role_request' | 'status_change';
   declare title: string;
   declare body: string;
   declare read: boolean;
@@ -17,7 +17,7 @@ export const initNotification = () => {
     {
       id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
       user_id: { type: DataTypes.INTEGER, allowNull: false },
-      type: { type: DataTypes.ENUM('task_assigned', 'message', 'role_request'), allowNull: false },
+      type: { type: DataTypes.ENUM('task_assigned', 'message', 'role_request', 'status_change'), allowNull: false },
       title: { type: DataTypes.STRING, allowNull: false },
       body: { type: DataTypes.TEXT },
       read: { type: DataTypes.BOOLEAN, defaultValue: false },

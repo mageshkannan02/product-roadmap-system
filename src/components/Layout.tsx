@@ -82,6 +82,13 @@ export function Layout() {
                   <span className="text-[10px] font-black text-amber-700 uppercase tracking-tighter">Pending Approval</span>
                 </div>
               )}
+
+              {myPendingRequest && myPendingRequest.status === 'Approved' && (
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50/80 backdrop-blur-sm border border-emerald-200/50 rounded-lg animate-pulse shadow-sm" title={`Approved Request: ${myPendingRequest.requested_role}`}>
+                  <ClipboardCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-[10px] font-black text-emerald-700 uppercase tracking-tighter">Approved & Ready!</span>
+                </div>
+              )}
               
               {myPendingRequest && myPendingRequest.status === 'Rejected' && (
                 <div className="flex items-center gap-2 group/reject relative">
@@ -131,15 +138,17 @@ export function Layout() {
                 value={user.role}
                 onChange={async (newRole) => {
                   const roles = ['Team Member', 'Product Manager', 'Admin'];
-                  const currentIndex = roles.indexOf(user.role);
                   const targetIndex = roles.indexOf(newRole);
+                  const originalIndex = roles.indexOf(user.originalRole);
 
-                  // Admins (or those whose originalRole was Admin) can switch freely.
-                  // Others can only switch DOWN without request.
-                  if (user.originalRole === 'Admin' || targetIndex <= currentIndex) {
+                  const isApproved = myPendingRequest && myPendingRequest.status === 'Approved' && myPendingRequest.requested_role === newRole;
+
+                  // Admins (or those whose originalRole was Admin/allowed the target level) can switch freely.
+                  if (user.originalRole === 'Admin' || targetIndex <= originalIndex || isApproved) {
                     try {
                       await switchRole(newRole as any);
                       toast.success(`Switched to ${newRole} role!`);
+                      if (isApproved) await dismissRequest();
                       navigate('/');
                     } catch {
                       toast.error('Failed to switch role');

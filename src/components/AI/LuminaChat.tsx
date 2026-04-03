@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, useDragControls } from 'framer-motion';
 import { Send, Bot, X, MessageSquare, Sparkles, Loader2, User } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../lib/auth';
@@ -26,6 +27,25 @@ export function LuminaChat() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const dragControls = useDragControls();
+  const constraintsRef = useRef(null);
+  const [placement, setPlacement] = useState<{
+    vertical: 'above' | 'below';
+    horizontal: 'start' | 'center' | 'end';
+  }>({ vertical: 'above', horizontal: 'center' });
+
+  const onDragEnd = (_: any, info: any) => {
+    const { x, y } = info.point;
+    const { innerWidth: width, innerHeight: height } = window;
+
+    // Detect if we're in the top half (open below) or bottom half (open above)
+    const vertical = y < height / 2 ? 'below' : 'above';
+    
+    // Detect horizontal placement for popup alignment
+    const horizontal = x < width / 3 ? 'start' : x > (width * 2) / 3 ? 'end' : 'center';
+
+    setPlacement({ vertical, horizontal });
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -96,12 +116,35 @@ export function LuminaChat() {
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <>
+      <div ref={constraintsRef} className="fixed inset-0 pointer-events-none z-40" />
+      <motion.div 
+        drag
+        dragControls={dragControls}
+        dragListener={false}
+        dragMomentum={false}
+        dragElastic={0.1}
+        dragConstraints={constraintsRef}
+        onDragEnd={onDragEnd}
+        whileDrag={{ scale: 1.02, cursor: 'grabbing' }}
+        className={cn(
+          "fixed bottom-6 right-6 z-50 flex",
+          placement.vertical === 'above' ? "flex-col" : "flex-col-reverse",
+          placement.horizontal === 'start' ? "items-start" : 
+          placement.horizontal === 'end' ? "items-end" : "items-center"
+        )}
+      >
       {/* Chat Window */}
       {isOpen && (
-        <div className="mb-4 w-[400px] h-[600px] bg-white/95 backdrop-blur-xl border border-indigo-100 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
-          {/* Header */}
-          <div className="p-4 bg-linear-to-r from-indigo-600 via-violet-600 to-indigo-700 text-white flex items-center justify-between">
+        <div className={cn(
+          "w-[400px] h-[600px] bg-white/95 backdrop-blur-xl border border-indigo-100 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in duration-300",
+          placement.vertical === 'above' ? "mb-4 slide-in-from-bottom-5" : "mt-4 slide-in-from-top-5"
+        )}>
+          {/* Header (Drag Handle) */}
+          <div 
+            onPointerDown={(e) => dragControls.start(e)}
+            className="p-4 bg-linear-to-r from-indigo-600 via-violet-600 to-indigo-700 text-white flex items-center justify-between cursor-grab active:cursor-grabbing"
+          >
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
                 <Sparkles className="w-5 h-5" />
@@ -218,9 +261,12 @@ export function LuminaChat() {
         </div>
       )}
 
-      {/* Floating Button */}
-      <button 
+      {/* Floating Button (Drag Handle) */}
+      <motion.button 
+        onPointerDown={(e) => dragControls.start(e)}
         onClick={() => setIsOpen(!isOpen)}
+        whileHover={{ scale: 1.1, rotate: 5 }}
+        whileTap={{ scale: 0.9 }}
         className={cn(
           "w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-500 group relative overflow-hidden",
           isOpen 
@@ -237,7 +283,8 @@ export function LuminaChat() {
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-indigo-600" />
           </div>
         )}
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
+    </>
   );
 }
