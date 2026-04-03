@@ -1,0 +1,59 @@
+databases:
+  - name: roadmap-db
+    databaseName: roadmap_system
+    user: roadmap_user
+    plan: free # Note: Render free tier PostgreSQL is limited to 90 days
+
+services:
+  # --- Backend API Service ---
+  - type: web
+    name: roadmap-api
+    env: node
+    plan: free
+    buildCommand: npm install && cd server && npm install
+    startCommand: npx tsx server/server.ts
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      - key: DB_DIALECT
+        value: postgres
+      - key: DB_NAME
+        fromDatabase:
+          name: roadmap-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: roadmap-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: roadmap-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: roadmap-db
+          property: host
+      - key: DB_DIALECT
+        value: postgres
+      - key: GEMINI_API_KEY
+        sync: false # User must provide this in Render dashboard
+      - key: DB_ALTER
+        value: "true" # For initial deployment to create tables
+      - key: APP_URL
+        fromService:
+          type: web
+          name: roadmap-api
+          property: host
+
+  # --- Frontend Static Site ---
+  - type: static
+    name: roadmap-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishDir: dist
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://roadmap-api.onrender.com/api/*

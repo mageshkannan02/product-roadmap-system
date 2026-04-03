@@ -56,7 +56,7 @@ erDiagram
         int roadmap_id FK
         string title
         enum priority
-        enum status
+        enum statusi am
         datetime deadline
         int created_by FK
     }
