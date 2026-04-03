@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? '' : 'https://roadmap-api-se84.onrender.com');
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
 
