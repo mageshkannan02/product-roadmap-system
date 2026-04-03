@@ -1,3 +1,4 @@
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
 
@@ -25,7 +26,9 @@ async function handleError(res: Response) {
 }
 
 async function fetchWithRefresh(url: string, options: RequestInit): Promise<any> {
-  const res = await fetch(url, options);
+  const fullUrl = url.startsWith('http') ? url : `${BASE_URL}${url}`;
+  const res = await fetch(fullUrl, options);
+
 
   if (res.status === 403) {
     const refreshToken = localStorage.getItem('refreshToken');
@@ -33,7 +36,7 @@ async function fetchWithRefresh(url: string, options: RequestInit): Promise<any>
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          const refreshRes = await fetch('/api/auth/refresh', {
+          const refreshRes = await fetch(`${BASE_URL}/api/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refreshToken })
