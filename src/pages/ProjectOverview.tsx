@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router';
 import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
 import { PieChart as PieChartIcon, FolderGit2, AlertCircle, Users, CheckCircle2, Clock, CalendarX, BarChart3, X, ArrowRight, Loader2, Flag, CalendarDays, MessageSquare } from 'lucide-react';
