@@ -3,6 +3,7 @@ import { motion, useDragControls } from 'framer-motion';
 import { Send, Bot, X, MessageSquare, Sparkles, Loader2, User } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../lib/auth';
+import { api } from '../../lib/api';
 import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
 
@@ -71,20 +72,8 @@ export function LuminaChat() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/ai/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ message: input })
-      });
+      const data = await api.post('/api/ai/chat', { message: input }, localStorage.getItem('token'));
 
-      if (!response.ok) {
-        throw new Error('Failed to reach Lumina');
-      }
-
-      const data = await response.json();
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
